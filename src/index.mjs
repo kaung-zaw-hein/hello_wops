@@ -1,23 +1,17 @@
-import chalk from "chalk";
 import express from "express";
 import winston from "winston";
 import expressWinston from "express-winston";
 import mongoose from "mongoose";
 import redis from "redis";
+import path from "path";
 
 const app = express();
 const port = process.env.PORT;
 
-const mongoUri = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`;
-
-const redisHost = process.env.REDIS_HOST;
-const redisPort = process.env.REDIS_PORT;
-
-console.log("Redis Host", redisHost);
 
 async function checkMongoConnection() {
   try {
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`);
     console.log("Connected to MongoDB successfully!");
   } catch (err) {
     console.error("Error connecting to MongoDB:", err);
@@ -28,7 +22,7 @@ async function checkMongoConnection() {
 async function checkRedisConnection() {
   try {
     const client = redis.createClient({
-      url: `redis://${redisHost}:${redisPort}`,
+      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     });
     await client.connect();
     console.log("Connected to Redis successfully!");
@@ -38,6 +32,9 @@ async function checkRedisConnection() {
   }
 }
 
+const logDir = path.resolve(process.cwd(), "logs");
+
+// Configure express-winston to log to a file
 app.use(
   expressWinston.logger({
     transports: [
@@ -45,13 +42,21 @@ app.use(
         json: true,
         colorize: true,
       }),
+      new winston.transports.File({
+        filename: path.join(logDir, "log.txt"),
+      }),
     ],
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.json()
+    ),
   })
 );
+
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-  res.sendFile("index.html");
+  res.sendFile(path.join(process.cwd(), "public", "index.html"));
 });
 
 (async () => {

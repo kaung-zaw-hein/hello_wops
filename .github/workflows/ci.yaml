@@ -19,4 +19,7 @@ jobs:
       - name: Set up Dependencies (NPM I)
         run: |
           npm install
+      - name: Build the App
+        run: |
+          npm run build
       

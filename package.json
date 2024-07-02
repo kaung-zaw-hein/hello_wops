@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./src/index.mjs"
+    "start": "node ./src/index.mjs",
+    "migrate": "echo Migration the DB",
+    "build" : "echo build && exit 0"
   },
   "keywords": [],
   "author": "",
